@@ -46,6 +46,10 @@ class MainActivity : ComponentActivity() {
                     }
                 }
 
+                val protocol = transportStatus.protocolStatus
+                val deviceConfig = protocol.deviceConfig
+                val bitTiming = protocol.bitTimingConstants
+
                 Surface(modifier = Modifier.fillMaxSize()) {
                     Column(
                         modifier = Modifier
@@ -55,30 +59,34 @@ class MainActivity : ComponentActivity() {
                         verticalArrangement = Arrangement.Center
                     ) {
                         Text("OpenDash X", style = MaterialTheme.typography.headlineLarge)
-                        Spacer(modifier = Modifier.height(24.dp))
+                        Spacer(modifier = Modifier.height(16.dp))
 
-                        Text("Version 0.3 - Sprint 3")
-                        Spacer(modifier = Modifier.height(24.dp))
+                        Text("Version 0.4 - Sprint 4")
+                        Spacer(modifier = Modifier.height(16.dp))
 
                         Text("USB Adapter: ${if (usbStatus.connected) "Connected" else "Not detected"}")
                         Text("Device: ${usbStatus.deviceName}")
-                        Text("VID: ${usbStatus.vendorId}")
-                        Text("PID: ${usbStatus.productId}")
+                        Text("VID: ${usbStatus.vendorId}  PID: ${usbStatus.productId}")
                         Text("Permission: ${if (usbStatus.permissionGranted) "Granted" else "Not granted"}")
 
-                        Spacer(modifier = Modifier.height(24.dp))
+                        Spacer(modifier = Modifier.height(16.dp))
 
-                        Text("GS_USB Device: ${if (transportStatus.deviceFound) "Found" else "Missing"}")
                         Text("USB Open: ${if (transportStatus.connectionOpen) "Yes" else "No"}")
                         Text("Interface Claimed: ${if (transportStatus.interfaceClaimed) "Yes" else "No"}")
-                        Text("Bulk IN Endpoint: ${if (transportStatus.bulkInFound) "Found" else "Missing"}")
-                        Text("Bulk OUT Endpoint: ${if (transportStatus.bulkOutFound) "Found" else "Missing"}")
-                        Text("Interfaces: ${transportStatus.interfaceCount}")
-                        Text("Endpoints: ${transportStatus.endpointCount}")
+                        Text("Bulk IN: ${if (transportStatus.bulkInFound) "Found" else "Missing"}")
+                        Text("Bulk OUT: ${if (transportStatus.bulkOutFound) "Found" else "Missing"}")
 
-                        Spacer(modifier = Modifier.height(24.dp))
+                        Spacer(modifier = Modifier.height(16.dp))
 
-                        Text("CAN Transport: ${if (transportStatus.ready) "Ready" else "Not ready"}")
+                        Text("Host Format: ${if (protocol.hostFormatSent) "Sent" else "Failed"}")
+                        Text("Device Config: ${if (protocol.deviceConfigRead) "Read" else "Failed"}")
+                        Text("BT Constants: ${if (protocol.bitTimingConstantsRead) "Read" else "Failed"}")
+                        Text("CAN Interfaces: ${deviceConfig?.interfaceCount ?: "-"}")
+                        Text("CAN Clock: ${bitTiming?.clockHz?.let { "$it Hz" } ?: "-"}")
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        Text("CAN Transport: ${if (transportStatus.ready) "Protocol Ready" else "Not ready"}")
                         Text("Frames: ${canTransport.frameCount()}")
                         Text("Status: ${transportStatus.message}")
                         Text("ECU: Waiting")
