@@ -10,49 +10,44 @@ import androidx.compose.material3.Text
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.example.opendashx.usb.UsbCanDeviceManager
 
 class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        val usbStatus = UsbCanDeviceManager(this).detectCanable()
+
         setContent {
-
             MaterialTheme {
-
-                Surface(
-                    modifier = Modifier.fillMaxSize()
-                ) {
-
+                Surface(modifier = Modifier.fillMaxSize()) {
                     Column(
-                        modifier = Modifier.fillMaxSize(),
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(32.dp),
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Center
                     ) {
+                        Text("OpenDash X", style = MaterialTheme.typography.headlineLarge)
+                        Spacer(modifier = Modifier.height(24.dp))
 
-                        Text(
-                            text = "OpenDash X",
-                            style = MaterialTheme.typography.headlineLarge
-                        )
+                        Text("Version 0.1 - Sprint 1")
+                        Spacer(modifier = Modifier.height(24.dp))
+
+                        Text("USB Adapter: ${if (usbStatus.connected) "Connected" else "Not detected"}")
+                        Text("Device: ${usbStatus.deviceName}")
+                        Text("VID: ${usbStatus.vendorId}")
+                        Text("PID: ${usbStatus.productId}")
+                        Text("Permission: ${if (usbStatus.permissionGranted) "Granted" else "Not granted"}")
 
                         Spacer(modifier = Modifier.height(24.dp))
 
-                        Text("Version 0.1")
-
-                        Spacer(modifier = Modifier.height(24.dp))
-
-                        Text("USB : Waiting")
-                        Text("CAN : Waiting")
-                        Text("ECU : Waiting")
-
+                        Text("CAN: Waiting")
+                        Text("ECU: Waiting")
                     }
-
                 }
-
             }
-
         }
-
     }
-
 }
