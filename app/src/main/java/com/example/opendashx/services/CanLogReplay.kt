@@ -24,7 +24,6 @@ class CanLogReplay(private val context: Context) {
     }
 
     fun loadMostRecent(
-        maxFrames: Int = Int.MAX_VALUE,
         onProgress: (ReplayProgress) -> Unit = {}
     ): ReplayStats {
         val file = findMostRecentLog()
@@ -38,7 +37,6 @@ class CanLogReplay(private val context: Context) {
 
     fun load(
         file: File,
-        maxFrames: Int = Int.MAX_VALUE,
         onProgress: (ReplayProgress) -> Unit = {}
     ): ReplayStats {
         return try {
@@ -76,18 +74,10 @@ class CanLogReplay(private val context: Context) {
         maxFrames: Int,
         onProgress: (ReplayProgress) -> Unit
     ): List<CanLogFrame> {
-        // Sprint 29: load the full CAN log by default.
-        // Earlier builds kept only the last 120k/250k frames, which made snapshots
-        // impossible to align with longer recordings. Keep maxFrames as a safety
-        // override, but do not silently drop old frames during normal replay.
-        val limit = if (maxFrames <= 0) Int.MAX_VALUE else maxFrames
         val estimatedLines = estimateLines(file)
-        val initialCapacity = estimatedLines.coerceIn(1, 600000)
-        val out = ArrayList<CanLogFrame>(initialCapacity)
         var lineCount = 0
         var parsedCount = 0
         var rejectedCount = 0
-        var limitReached = false
         var header: List<String> = emptyList()
 
         onProgress(
@@ -115,12 +105,8 @@ class CanLogReplay(private val context: Context) {
 
                 val parsed = parseAnyFrameLine(line, header)
                 if (parsed != null) {
-                    if (out.size < limit) {
                         out.add(parsed)
                         parsedCount++
-                    } else {
-                        limitReached = true
-                    }
                 } else {
                     rejectedCount++
                 }
@@ -135,7 +121,6 @@ class CanLogReplay(private val context: Context) {
                             framesProcessed = parsedCount,
                             totalLinesEstimate = estimatedLines,
                             percent = pct,
-                            message = if (limitReached) "Loaded $parsedCount frames, limit reached..." else "Loaded $parsedCount frames, skipped $rejectedCount rows..."
                         )
                     )
                 }
@@ -150,7 +135,6 @@ class CanLogReplay(private val context: Context) {
                 framesProcessed = out.size,
                 totalLinesEstimate = estimatedLines,
                 percent = 100,
-                message = if (limitReached) "Loaded ${out.size} frames; hit maxFrames limit" else "Loaded ${out.size} frames, skipped $rejectedCount rows"
             )
         )
         return out
